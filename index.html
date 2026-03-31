@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animasi Ultah Bebek Bunga</title>
+    <style>
+        /* --- 1. CSS Reset & Layout (image_0.png) --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #4da6ff; /* Warna langit biru tua dari image_0 */
+            font-family: 'Courier New', Courier, monospace; /* Font mesin tik untuk tanda */
+            overflow: hidden;
+        }
+
+        /* Container Utama */
+        .stage {
+            position: relative;
+            width: 300px;
+            height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end; /* Memastikan pot di bawah */
+            perspective: 1000px; /* Untuk efek 3D sederhana */
+        }
+
+        /* --- 2. Elemen Pot & Tanah (image_0.png) --- */
+        .pot-container {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 50%;
+            display: flex;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .pot {
+            width: 80%;
+            height: 100%;
+            background-color: white;
+            border-radius: 10px 10px 50px 50px;
+            box-shadow: 10px 10px 20px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #ccc;
+        }
+
+        .soil {
+            position: absolute;
+            top: 10px;
+            left: 10%;
+            width: 80%;
+            height: 30px;
+            background-color: #5d4037; /* Warna tanah coklat tua */
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        /* --- 3. Elemen Penyiram Air (image_1.png) --- */
+        .watering-can {
+            position: absolute;
+            top: -100px; /* Sembunyi di atas */
+            right: -50px;
+            width: 80px;
+            height: 60px;
+            background-color: #9e9e9e; /* Abu-abu metalik */
+            border-radius: 10px;
+            opacity: 0;
+            z-index: 20;
+            transform: rotate(-30deg);
+            transition: all 1s ease-out;
+        }
+
+        .watering-can::before { /* Moncong */
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 15px;
+            width: 40px;
+            height: 15px;
+            background-color: #9e9e9e;
+            border-radius: 5px;
+        }
+
+        .water-stream {
+            position: absolute;
+            top: 30px;
+            left: -20px;
+            width: 4px;
+            height: 0;
+            background-color: rgba(179, 217, 255, 0.8); /* Biru air transparan */
+            border-radius: 2px;
+            opacity: 0;
+            transition: height 0.5s ease-in, opacity 0.3s;
+        }
+
+        /* State: Saat menyiram */
+        .watering-can.active {
+            top: 50px;
+            right: 20px;
+            opacity: 1;
+        }
+
+        .watering-can.active .water-stream {
+            height: 100px;
+            opacity: 1;
+        }
+
+        /* --- 4. Elemen Bunga Kuning (image_2.png) --- */
+        .flower-bud {
+            position: absolute;
+            bottom: 45%; /* Di atas tanah */
+            width: 60px;
+            height: 0; /* Mulai dari nol */
+            background-color: #ffeb3b; /* Kuning cerah */
+            border-radius: 30px 30px 5px 5px;
+            z-index: 5;
+            transition: height 2s ease-out, transform 1s ease-in-out;
+            transform-origin: bottom center;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow: hidden; /* Sembunyikan bebek di dalam */
+            box-shadow: 0 -5px 15px rgba(255, 235, 59, 0.5);
+        }
+
+        /* State: Tunas tumbuh */
+        .flower-bud.grown {
+            height: 120px;
+        }
+
+        /* State: Bunga mekar (membuka) */
+        .flower-bud.open {
+            height: 150px;
+            width: 150px;
+            border-radius: 50% 50% 10px 10px;
+            background-color: #fff9c4; /* Kuning kelopak yang lebih lembut */
+            overflow: visible; /* Bebek bisa keluar */
+        }
+
+        /* --- 5. Elemen Bebek Kejutan (image_3.png & image_8.png) --- */
+        .duck {
+            position: absolute;
+            bottom: -100px; /* Sembunyi di bawah kelopak */
+            width: 100px;
+            height: 100px;
+            background-color: #ffeb3b; /* Warna bebek kuning */
+            border-radius: 50% 50% 40% 40%;
+            border: 3px solid #fbc02d;
+            z-index: 6;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: all 1s ease-out 0.5s; /* Delay setelah bunga mekar */
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Wajah Bebek */
+        .duck-eye {
+            width: 10px;
+            height: 14px;
+            background-color: black;
+            border-radius: 50%;
+            position: absolute;
+            top: 30px;
+        }
+        .duck-eye.left { left: 25px; }
+        .duck-eye.right { right: 25px; }
+        
+        .duck-bill {
+            width: 30px;
+            height: 20px;
+            background-color: #ff9800; /* Oranye paruh */
+            border-radius: 10px;
+            position: absolute;
+            top: 45px;
+        }
+
+        /* State: Bebek muncul */
+        .flower-bud.open .duck {
+            bottom: 30px; /* Muncul ke atas */
+            opacity: 1;
+            animation: duckWiggle 2s infinite ease-in-out 1.5s; /* Bergoyang setelah muncul */
+        }
+
+        /* --- 6. Elemen Kue & Tanda (image_3.png) --- */
+        .sign {
+            position: absolute;
+            top: -40px;
+            left: -50px;
+            background-color: #fff8e1; /* Warna kertas lama */
+            padding: 5px 10px;
+            border: 1px solid #d7ccc8;
+            border-radius: 2px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+            transform: rotate(-10deg);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .cake-plate {
+            position: absolute;
+            top: 10px;
+            right: -60px;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cake {
+            width: 40px;
+            height: 30px;
+            background-color: #f8bbd0; /* Pink frosting */
+            border-radius: 5px;
+            position: relative;
+        }
+        
+        .cake::before { /* Lilin */
+            content: '🕯️';
+            position: absolute;
+            top: -18px;
+            left: 10px;
+            font-size: 16px;
+        }
+
+        /* --- 7. CSS Animations Keyframes --- */
+        @keyframes duckWiggle {
+            0%, 100% { transform: rotate(0deg) translateY(0); }
+            25% { transform: rotate(3deg) translateY(-2px); }
+            75% { transform: rotate(-3deg) translateY(2px); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="stage">
+        <div class="watering-can" id="waterCan">
+            <div class="water-stream"></div>
+        </div>
+
+        <div class="flower-bud" id="flower">
+            <div class="duck">
+                <div class="duck-eye left"></div>
+                <div class="duck-eye right"></div>
+                <div class="duck-bill"></div>
+                
+                <span class="sign">Happy Birthday</span>
+                
+                <div class="cake-plate">
+                    <div class="cake"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pot-container">
+            <div class="pot">
+                <div class="soil"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Menggunakan JavaScript untuk mengatur timing (seperti GSAP sederhana)
+        
+        const waterCan = document.getElementById('waterCan');
+        const flower = document.getElementById('flower');
+
+        // Fungsi pembantu untuk membuat delay (janji/promise)
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // Rangkaian Animasi Utama
+        async function runAnimation() {
+            // Detik 1: Siram air muncul
+            await wait(1000);
+            waterCan.classList.add('active');
+
+            // Detik 3: Siram air selesai, penyiram hilang
+            await wait(2000);
+            waterCan.classList.remove('active');
+
+            // Detik 4: Tunas kuning mulai tumbuh
+            await wait(1000);
+            flower.classList.add('grown');
+
+            // Detik 7: Bunga mekar! (Kejutan bebek)
+            await wait(3000);
+            flower.classList.add('open');
+        }
+
+        // Jalankan saat halaman siap
+        window.addEventListener('load', runAnimation);
+
+    </script>
+</body>
+</html>
